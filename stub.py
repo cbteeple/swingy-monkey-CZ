@@ -13,7 +13,7 @@ eta = 0.20       # Learning Rate
 gamma = 0.9      # Discount Factor
 explore = 0.10   # Probabillity of exploring
 
-training_iters = 4000
+training_iters = 500
 
 class Learner(object):
     '''
@@ -58,28 +58,9 @@ class Learner(object):
 
         if self.iter>self.switch_explore:
         	self.explore = 0.00000005
-        	#self.explore=self.explore/1.05
-
-        #if self.explore <0.00000005:
-        #    self.explore=0.00000005
 
         print(self.explore)
         
-
-    # Create a deterministic list from the state dictionary
-    def flattenStates(self, stateDict):
-        flattened = []
-
-        if stateDict is not None:
-            # Use a handy recursion to unpack the "tree" and "monkey" nested dictionaries
-            for key in stateDict:
-                if isinstance(stateDict[key], dict):
-                    flattened.extend(self.flattenStates(stateDict[key]))
-                else:
-                    flattened.append(stateDict[key])
-
-        return flattened
-
 
     def discretize_state(self, action, state):
         # [action, gravity, dist, top_dist, bot_dist, monkey_vel]
@@ -93,14 +74,6 @@ class Learner(object):
         a_idx.append(self.findNearestIdx(state['monkey']['vel'],self.vel_vec))
 
         a_idx = np.array(a_idx)
-        #print(a_idx)
-
-
-
-        #a = np.array([action, self.grav, state['tree']['dist']/self.w_bin, (state['tree']['top']-state['monkey']['top'])/self.h_bin, \
-        # (state['tree']['bot']-state['monkey']['bot'])/self.h_bin, (state['monkey']['vel']/self.v_bin)+self.v_bin/2 ])
-        #dis_state = a.astype(int)
-
         return a_idx
 
 
@@ -120,21 +93,7 @@ class Learner(object):
 
 
     def action_callback(self, state):
-        '''
-        Implement this function to learn things and take actions.
-        Return 0 if you don't want to jump and 1 if you do.
-        '''
-
-        # You might do some learning here based on the current state and the last state.
-
-        # You'll need to select and action and return it.
-        # Return 0 to swing and 1 to jump.
-
         new_state  = state
-        new_state_flat = self.flattenStates(state)
-        last_state_flat = self.flattenStates(self.last_state)
-        # flat [score, tree_dist, tree_top, tree_bot, monkey_vel, monkey_top, monkey_bot]
-
     
         # If we have never taken an action, don't jump
         if self.last_state is None:
@@ -165,8 +124,6 @@ class Learner(object):
             else:
                 new_action = np.argmax([self.getQ(self.discretize_state(0, new_state)), self.getQ(self.discretize_state(1, new_state))])
 
-        #print(self.Q)
-        #print(new_action)
         
         self.last_action = new_action
         self.last_state  = new_state
